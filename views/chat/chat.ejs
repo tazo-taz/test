@@ -1,0 +1,11 @@
+<div class="row">
+    <div class="col-lg-4 col-md-6 mb-2">
+        <div class="list-group">
+            <% users.forEach((a,b) => { %>
+            <a href="/chat/<%= a._id %>" class="chatname list-group-item list-group-item-action <%= ownuser.notseen.includes(a._id) ? 'font-weight-bold' : null %>" aria-current="true">
+                <%= a.email %>
+            </a>
+            <% }) %>
+        </div>
+    </div>
+</div>

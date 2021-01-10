@@ -1,0 +1,129 @@
+<link rel="stylesheet" href="/css/emojionearea.min.css">
+<div class="row">
+  <div class="col-lg-4 col-md-6 mb-2">
+    <div class="list-group">
+      <% users.forEach((a,b)=> { %>
+      <a
+        href="/chat/<%= a._id %>"
+        data-_id="<%= a._id%>"
+        class="chatname list-group-item list-group-item-action <%= ownuser.notseen.includes(a._id) ? 'font-weight-bold' : null %> <%= String(a._id) == String(user._id) ? 'active' : null %>"
+        aria-current="true"
+      >
+        <%= a.email %>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+  <div class="col-lg-8 col-md-6">
+    <p style="display: none" id="own"><%= ownuser._id %></p>
+    <p style="display: none" class="currentemail"><%= user._id %></p>
+    <p class="curremail"><%= user.email %></p>
+    <div class="chatbox">
+      <div class="chatboxinps">
+        <% if(messages){ %> <% messages.forEach(a=> { %>
+        <div>
+          <p class="<%= a.sender == ownuser._id ? 'right' : 'left' %>">
+            <%= a.text %>
+          </p>
+        </div>
+        <% }) %> <% } %>
+        <div id="typing" style="display: none"><%= user.name %> is typing</div>
+      </div>
+      <form class="input-group mb-3" id="socketform">
+        <textarea style="height: 35px" class="emojionearea emojionearea-editor" name="email" placeholder="Message..." id="demo1" rows="1"></textarea>
+        <button class="btn btn-primary" id="button-addon2">Send</button>
+  </div>
+</div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><script src="/emojionearea.js"></script>
+<script>
+$("#demo1").emojioneArea({
+        pickerPosition: "top",
+      });
+  const socket = io();
+
+  const socketform = document.querySelector("#socketform");
+  const typing = document.querySelector("#typing");
+  const chatbox = document.querySelector(".chatbox");
+  const curremail = document.querySelector(".curremail");
+  const chatboxinps = document.querySelector(".chatboxinps");
+  const own = document.querySelector("#own").innerText;
+  const currentemail = document.querySelector(".currentemail").innerText;
+  const currentrealemail = document.querySelector(".curremail").innerText;
+  const chatname = document.querySelectorAll(".chatname");
+  const anchors = document.querySelectorAll(".list-group a");
+  let Timeout = null;
+
+  chatboxinps.scrollTop = chatboxinps.scrollHeight;
+
+  socketform.addEventListener("submit", (a) => {
+    a.preventDefault();
+    socket.emit(
+      "send_message",
+      socketform.elements.email.value,
+      currentemail,
+      own
+    );
+    socketform.elements.email.value = "";
+  });
+
+  socketform.elements.email.addEventListener("input", () => {
+    socket.emit("keyup", currentemail, own);
+  });
+
+  socket.emit("join", currentemail, own);
+
+  socket.on("typing", (a) => {
+    if (a != own) {
+      clearTimeout(Timeout);
+      if (typing.style.display != " block") {
+        typing.style.display = "block";
+        Timeout = setTimeout(() => {
+          typing.style.display = "none";
+        }, 1000);
+        chatboxinps.scrollTop = chatboxinps.scrollHeight;
+      }
+    }
+  });
+
+  socket.on("message", (a, b, c) => {
+    if (b != own) socket.emit("seen", b, c);
+    let div = document.createElement("div");
+    let p = document.createElement("p");
+    p.classList.add(b == own ? "right" : "left");
+    p.innerHTML = a;
+    div.append(p);
+    chatboxinps.insertBefore(div, typing);
+    chatboxinps.scrollTop = chatboxinps.scrollHeight;
+  });
+
+  setInterval(() => {
+
+      fetch('/userdata', {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-cache',
+          credentials: 'same-origin',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          redirect: 'follow',
+          referrerPolicy: 'no-referrer',
+          body: JSON.stringify({ currentemail })
+      }).then(a => a.json())
+          .then(a => {
+              if(a.hasseen){
+                curremail.innerText = currentrealemail + '(not seen)'
+            }else{
+                  curremail.innerText = currentrealemail + '(seen)'
+              }
+             
+              anchors.forEach(b => {
+                  b.classList.remove('font-weight-bold')
+                  if (a.user1.notseen.includes(b.dataset._id)) {
+                      b.classList.add('font-weight-bold')
+                  }
+              })
+          })
+  }, 5000);
+</script>

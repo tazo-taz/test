@@ -1,0 +1,53 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.chatbox {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    max-height: 500px;
+}
+.username {
+    animation: bounce 1s infinite;
+}
+.chatboxinps {
+    height: 450px;
+    max-height: 450px;
+    overflow-y: auto;
+}
+.input-group {
+    margin-top: auto;
+}
+.curremail {
+    text-align: center;
+    background: #0d6efd;
+    padding: 10px;
+    color: white;
+    border-radius: 10px;
+}
+.chatboxinps > div {
+    clear: both;
+}
+.chatboxinps > div > p {
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+.chatboxinps > div .right {
+    float: right;
+    background: #0d6efd;
+    color: white;
+  }
+  .chatboxinps > div .left {
+    float: left;
+    background: #bdbdbd;
+    color: black;
+    }
+.font-weight-bold {
+    font-weight: bold;
+}
+#socketform {
+    display: grid;
+    grid-template-columns: 1fr 60px;
+}
